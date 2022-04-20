@@ -29,6 +29,7 @@ const renewDb = async()=>{
         const nd = new Campground({
         location:`${cities[rand].city},${cities[rand].state}`,
         title:`${sample(descriptors)} ${sample(places)}`,
+        image:"https://source.unsplash.com/collection/483251"
     });
     await nd.save();
     }
