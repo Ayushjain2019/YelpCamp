@@ -4,17 +4,22 @@ const path = require('path');
 const ejsMate = require('ejs-mate');
 const methodOverride = require('method-override');
 const mongoose = require('mongoose');
-const Campground=require('./models/campground');
-const ExpressError = require('./views/utilis/ExpressError');
-const wrapAsync = require('./views/utilis/wrapAsync');
-const Joi = require('joi');
-const { object } = require('joi');
-const {JoiSchema} = require('./Schema');
+const ExpressError = require('./utilis/ExpressError');
+const session = require('express-session');
+const campground = require('./routes/campground'); 
+const review = require('./routes/review');
+const user = require('./routes/users');
+const flash = require('connect-flash');
+
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+const User = require('./models/user');
 
 mongoose.connect('mongodb://localhost:27017/yelp-camp',{
     useNewUrlParser:true,
-   // useCreateIndex:true,
+    //useCreateIndex:true,
     useUnifiedTopology:true
+   // useFindAndModify: false
 });
 
 const db = mongoose.connection;
@@ -34,63 +39,43 @@ app.listen(3000,()=>{
 app.use(express.urlencoded({extended:true}));
 app.use(methodOverride('_method'));
 
+const sessionConfig = { 
+    secret:'goodsecret!',
+    resave:false,
+    saveUninitialized:true,
+    cookie:{
+        httpOnly:true,
+        expires:Date.now()+1000*60*60*24*7,
+        maxAge:1000*60*60*24*7
+    }
+}
+
+app.use(session(sessionConfig));
+
+app.use(flash());
+
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+app.use((req,res,next)=>{
+    res.locals.currentUser = req.user;
+    res.locals.success = req.flash('success');
+    res.locals.error= req.flash('error');
+    next();
+})
+
 app.get('/',(req,res)=>{
    // res.send("Hello!!");
    res.render('home');
 })
 
-const validateCampground=(req,res,next)=>{
-    const {error} = JoiSchema.validate(req.body);
-    if(error){
-        const msg = error.details.map(el=>el.message).join(',');
-        throw new ExpressError(401,msg);
-    }
-    else{
-        next();
-    }
-}
-
-
-app.get('/campgrounds', async (req,res)=>{
-     const fd = await Campground.find({});
-     res.render('campgrounds/index', { fd })
-})
-
-app.post('/campgrounds', validateCampground, wrapAsync(async (req,res,next)=>{
-          // res.send(req.body);
-          const cmp = new Campground(req.body.campground);
-          await cmp.save();
-          res.redirect('/campgrounds');
-}))
-
-app.get('/campgrounds/nw', (req,res) => {
-    res.render('campgrounds/nw');
-})
-
-app.get('/campgrounds/:id', wrapAsync(async (req,res,next)=>{
-    const camp = await Campground.findById(req.params.id);
-    res.render('campgrounds/show', { camp });
-}));
-
-app.get('/campgrounds/:id/edit', async (req,res)=>{
-    const camp = await Campground.findById(req.params.id);
-    res.render('campgrounds/edit', { camp });
-})
-
-app.put('/campgrounds/:id', async (req,res)=>{
-    const {id} = req.params;
-
-    const camp= await Campground.findByIdAndUpdate(id,{...req.body.campground});
-    
-    res.redirect(`/campgrounds/${camp._id}`);
-
-})
-
-app.delete('/campgrounds/:id', async (req,res)=>{
-    const {id}=req.params;
-    await Campground.findByIdAndDelete(id);
-    res.redirect('/campgrounds');
-})
+app.use('/campgrounds',campground);
+app.use('/campgrounds/:id/review',review);
+app.use('/',user);
+app.use(express.static(path.join(__dirname,'public')));
 
 app.all('*',(req,res,next)=>{
    // res.send("404!!!");

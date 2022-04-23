@@ -27,6 +27,7 @@ const renewDb = async()=>{
         const rand= Math.floor(Math.random()*10);
         const r = Math.floor(Math.random()*15);
         const nd = new Campground({
+        author:'6210d64dd6b921525cec6379',    
         location:`${cities[rand].city},${cities[rand].state}`,
         title:`${sample(descriptors)} ${sample(places)}`,
         image:"https://source.unsplash.com/collection/483251"
