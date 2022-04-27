@@ -30,7 +30,20 @@ const renewDb = async()=>{
         author:'6210d64dd6b921525cec6379',    
         location:`${cities[rand].city},${cities[rand].state}`,
         title:`${sample(descriptors)} ${sample(places)}`,
-        image:"https://source.unsplash.com/collection/483251"
+        geometry: {
+            type: "Point",
+            coordinates: [-113.1331, 47.0202]
+        },
+        image: [
+            {  
+                url: 'https://res.cloudinary.com/ayush123/image/upload/v1645701074/YelpCamp/svlbx0vki8nduhogfnst.png',  
+                filename: 'YelpCamp/svlbx0vki8nduhogfnst'
+            },
+            {  
+                url: 'https://res.cloudinary.com/ayush123/image/upload/v1645701074/YelpCamp/txksmeuaptptzy7zrvp6.png',  
+                filename: 'YelpCamp/txksmeuaptptzy7zrvp6'
+            }
+        ]
     });
     await nd.save();
     }
