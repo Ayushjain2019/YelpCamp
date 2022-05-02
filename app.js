@@ -14,6 +14,8 @@ const campground = require('./routes/campground');
 const review = require('./routes/review');
 const user = require('./routes/users');
 const flash = require('connect-flash');
+const mongoSanitize= require('express-mongo-sanitize');
+
 
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
@@ -44,6 +46,7 @@ app.use(express.urlencoded({extended:true}));
 app.use(methodOverride('_method'));
 
 const sessionConfig = { 
+    name:'hlo',
     secret:'goodsecret!',
     resave:false,
     saveUninitialized:true,
@@ -80,6 +83,7 @@ app.use('/campgrounds',campground);
 app.use('/campgrounds/:id/review',review);
 app.use('/',user);
 app.use(express.static(path.join(__dirname,'public')));
+app.use(mongoSanitize());
 
 app.all('*',(req,res,next)=>{
    // res.send("404!!!");

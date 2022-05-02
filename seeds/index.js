@@ -23,16 +23,15 @@ const renewDb = async()=>{
 
     await Campground.deleteMany({});
     
-    for(let i=0;i<5;++i){
-        const rand= Math.floor(Math.random()*10);
-        const r = Math.floor(Math.random()*15);
+    for(let i=0;i<30;++i){
+        const rand= Math.floor(Math.random()*30);
         const nd = new Campground({
         author:'6210d64dd6b921525cec6379',    
         location:`${cities[rand].city},${cities[rand].state}`,
         title:`${sample(descriptors)} ${sample(places)}`,
         geometry: {
             type: "Point",
-            coordinates: [-113.1331, 47.0202]
+            coordinates: [cities[rand].longitude,cities[rand].latitude]
         },
         image: [
             {  
